@@ -3,21 +3,16 @@ import argparse
 
 import numpy as np 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader, Dataset, random_split
 
-import torchvision
-from torchvision import datasets, transforms
-from torchvision.transforms import ToTensor
+from torchvision import datasets
+from torchvision.transforms import v2
 
 from helpful.Sampling_techniques import *
 from helpful.losses import *
 from helpful.Models import *
-from helpful.DataLoader import *
 
 cuda = True if torch.cuda.is_available() else False
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+device = torch.device('cuda') if cuda else torch.device('cpu')
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -33,12 +28,13 @@ parser.add_argument("--N", type=int, default=16, help="Negative samples prt inst
 
 args = parser.parse_args()
 
-trans = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(25),
-    transforms.RandomAffine(degrees=0, translate=(0, 0.2), scale=(1.0, 1.2), shear=20),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+trans = v2.Compose([
+    v2.ToImage(),
+    v2.ToDtype(torch.float32, scale = True),
+    v2.RandomHorizontalFlip(),
+    v2.RandomRotation(25),
+    v2.RandomAffine(degrees=0, translate=(0, 0.2), scale=(1.0, 1.2), shear=20),
+    v2.Normalize(mean=[0.5], std=[0.5])
 ])
 
 if cuda:
@@ -59,7 +55,7 @@ test_data = datasets.FashionMNIST(
     root="data", # where to download data to?
     train=False, # get training data
     download=True, # download data if it doesn't exist on disk
-    transform=ToTensor() # images come as PIL format, we want to turn into Torch tensors
+    transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale = True)]) # images come as PIL format, we want to turn into Torch tensors
 )
 
 train_generator = torch.utils.data.DataLoader(train_data, batch_size = args.batch_size, shuffle = True)
