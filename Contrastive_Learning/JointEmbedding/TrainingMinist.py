@@ -72,7 +72,8 @@ var_loss_values = []
 cov_loss_values = []
 con_loss_values = []
 
-
+print(device)
+print("Training Started ....")
 for epoch in range(args.epochs):
 
     # Training Mode
@@ -81,7 +82,6 @@ for epoch in range(args.epochs):
     var_lossv = 0
     con_lossv = 0
     cov_lossv = 0
-
 
     for train_x, train_y in train_generator:
 
