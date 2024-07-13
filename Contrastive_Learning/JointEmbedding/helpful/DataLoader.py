@@ -20,3 +20,19 @@ class CustomDataset(Dataset):
         target = torch.tensor(target, dtype=torch.long)
         
         return data_sample, target
+
+class FilteredDataset(Dataset):
+    def __init__(self, dataset, classes):
+        self.dataset = dataset
+        self.classes = classes
+        self.indices = [i for i, label in enumerate(dataset.targets) if label in classes]
+        self.targets = [dataset.targets[i] for i in self.indices]
+        self.data = [dataset.data[i] for i in self.indices]
+
+    def __len__(self):
+        return len(self.indices)
+
+    def __getitem__(self, idx):
+        img, label = self.data[idx], self.targets[idx]
+        label = self.classes.index(label)
+        return self.dataset.transform(img), label

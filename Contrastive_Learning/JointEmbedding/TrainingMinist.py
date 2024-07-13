@@ -10,6 +10,7 @@ from torchvision.transforms import v2
 from helpful.Sampling_techniques import *
 from helpful.losses import *
 from helpful.Models import *
+from helpful.DataLoader import *
 
 cuda = True if torch.cuda.is_available() else False
 device = torch.device('cuda') if cuda else torch.device('cpu')
@@ -58,9 +59,16 @@ test_data = datasets.FashionMNIST(
     transform=v2.Compose([v2.ToImage(), v2.ToDtype(torch.float32, scale = True)]) # images come as PIL format, we want to turn into Torch tensors
 )
 
+# Filter the datasets to include only the specified classes
+classes = [0, 5]
+train_data = FilteredDataset(train_data, classes)
+test_data = FilteredDataset(test_data, classes)
+
+print("range of values: ", train_data.data[0].min(), train_data.data[0].max())
+
+# Create DataLoader
 train_generator = torch.utils.data.DataLoader(train_data, batch_size = args.batch_size, shuffle = True)
 test_generator = torch.utils.data.DataLoader(test_data, batch_size = args.batch_size, shuffle = False)
-
 
 # inistantiate your optimizer and the scheduler procedure
 optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
@@ -123,7 +131,6 @@ for epoch in range(args.epochs):
     con_loss_values.append(con_lossv)
 
     print(f"Epoch: {epoch + 1} | training_loss : {train_loss:.4f} | Sim_loss : {loss_contra:.4f} | Var_loss : {_std_loss:.4f} | Cov_loss : {_cov_loss:.4f}")
-
 
 # Evaluation mode
 model.eval()
